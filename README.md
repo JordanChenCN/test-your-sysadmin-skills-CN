@@ -44,5 +44,15 @@
 <details>
 <summary><b>GNU/Linux和UNIX的不同之处有哪些？</b></summary><br>
 
+参考答案：
+
+<b>UNIX</b> - 只有大公司被允许使用UNIX的版权和名称。IBM AIX，Sun Solaris，以及HP-UX都是UNIX操作系统。大多数UNIX操作系统都是商业化的。
+- 考虑到UNIX操作系统的完整性，它的所有内容都来自同一个厂商。
+- 大多数类UNIX操作系统都是收费的。
+- UNIX操作系统有它自己的防火墙软件。
+- UNIX支持的文件系统为jfs，gpfs (AIX)，jfs，gpfs (HP-UX)，jfs，gpfs (Solaris)。
+
+<b>GNU/Linux</b>是UNIX的克隆，但是如果基于可移植操作系统接口标准考虑的话，那么Linux也能视为UNIX。
+- Linux是一种内核，但是也有人认为Linux是操作系统的名称，Linux内核是Linux系统的一部分。
 
 </details>
