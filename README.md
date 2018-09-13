@@ -432,14 +432,244 @@ rsync -av --progress --delete dir1/ dir2
 - <code>-v, --verbose</code> - 详细模式
 - <code>--progress</code> - 传输时显示进度
 
+</details>
+
+<details>
+<summary><b>如何快速备份一个文件？</b></summary><br>
+
+```bash
+cp filename{,.orig}
+```
+
+</details>
+
+<details>
+<summary><b>如何查找大于20m的文件?</b></summary><br>
+
+```bash
+find / -type f -size +20M
+```
+
+</details>
+
+<details>
+<summary><b><code>sudo su -</code>和<code>sudo su</code>的区别是什么?</b></summary><br>
+
+<code>su -</code>会在切换用户后再登陆shell，可以重置大多数环境变量，来提供一个干净的基础。
+
+<code>su</code>只是切换用户，提供一个环境变量和之前的用户几乎一样的shell。
+
+</details>
+
+<details>
+<summary><b>如何查找系统中在过去60分钟修改过的文件?</b></summary><br>
+
+```bash
+find / -mmin -60 -type f
+```
+
+</details>
+
+<details>
+<summary><b>为什么保留系统中的旧日志?</b></summary><br>
+
+旧日志在调查系统问题时很重要。
+
+</details>
+
+<details>
+<summary><b>什么是增量备份?</b></summary><br>
+
+增量备份是一种只复制自上次备份以来更新的文件的备份方式。
+
+</details>
+
+<details>
+<summary><b>什么是RAID?什么是RAID0,RAID1,RAID5,RAID6,RAID10?</b></summary><br>
+
+<b>RAID</b> (Redundant Array of Inexpensive/Independent Disks)是一种提高数据存储性能和/或可靠性的技术。
+
+- <b>RAID0</b>：也成为磁盘条带化，是一种将文件分割并将数据保存在RAID组中的所有磁盘驱动器的技术，没有任何冗余措施。
+
+- <b>RAID1</b>：一种通过把数据写入2个磁盘来提高安全性的流行磁盘系统，也叫镜像化。RAID1不会提高写性能，但读性能约等于每个磁盘性能的和。当其中一个磁盘驱动器发生故障后，还可以使用另一个磁盘驱动，并在手动更换了故障的驱动器后，RAID控制器会把正常的工作驱动器上的全部内容复制到新的驱动器上。
+
+- <b>RAID5</b>：一种通过计算奇偶校验数据来提高安全性，通过把数据分布在三个或更多驱动器的来提高速度（条带化）的磁盘系统。当单个驱动器发生故障时，可以读取计算分布式奇偶校验数据来恢复损坏盘中的数据。
+
+- <b>RAID6</b>：RAID6通过新增一块奇偶校验盘来扩展RAID5。它至少需要4块磁盘，并能在2块盘同时发生故障时继续读写操作。RAID6对读操作没有性能损失，但由于计算奇偶校验的开销，在写操作上会有性能损失。
+
+- <b>RAID10</b>：即RAID1+0，是一种结合了磁盘镜像化和磁盘条带化来保护数据的RAID配置。它至少需要4块盘，并把镜像的数据条带化。只要每对镜像化的磁盘中有一个正常工作，数据就可以恢复。但如果同一镜像对中的2块磁盘都发生了故障，那么由于条带化中没有奇偶校验，所有数据都会丢失。
+
+</details>
+
+<details>
+<summary><b>如何指定和修改用户的默认组?</b></summary><br>
+
+<code>useradd -m -g initial_group username</code>
+
+<b>-g/--gid:</b>定义了用户初始登陆组的组名或组号。如果用这个参数指定了组名或组号，那组必须是已存在的。如果没有使用该参数，那么将根据/etc/login.defs文件中的USERGROUPS_ENAB变量来决定useradd命令的结果。（USERGROUPS_ENAB yes）时默认创建一个与用户名相同的组，GID也等于UID。
+
+</details>
+
+<details>
+<summary><b>为什么要把服务器放在机柜中?</b></summary><br>
+
+- 保护硬件
+- 工作区组织化
+- 更好地电源管理
+- 更整洁的环境
+
+</details>
+
+###### 网络问题
+
+<details>
+<summary><b>通过http监控发现网站挂了，但可以telnet通端口，如何解决改问题？</b></summary><br>
+
+我会通过ssh连接到web服务器，然后查看相关日志文件，找出问题再解决问题。
+
+</details>
+
+<details>
+<summary><b>SMTP, FTP, DNS, DHCP 和 SSH的默认端口是什么？</b></summary><br>
+
+<table style="width:100%">
+  <tr>
+    <th>SERVICE</th>
+    <th>PORT</th>
+  </tr>
+  <tr>
+    <td>SMTP</td>
+    <td>25</td>
+  </tr>
+  <tr>
+    <td>FTP</td>
+    <td>20：传输数据；21：保持连接</td>
+  </tr>
+  <tr>
+    <td>DNS</td>
+    <td>53</td>
+  </tr>
+  <tr>
+    <td>DHCP</td>
+    <td>67/UDP：DHCP服务端；68/UDP：DHCP 客户端</td>
+  </tr>
+  <tr>
+    <td>SSH</td>
+    <td>22</td>
+  </tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>当你在浏览器中输入api.example.com并回车发生了什么?</b></summary><br>
+
+首先，查询浏览器自己的DNS缓存，查不到时请求操作系统去解析域名。操作系统也有自己的DNS缓存，解析失败时再向操作系统配置的DNS服务器请求。操作系统配置的DNS服务器一般是由路由器中的DHCP服务配置的，而DHCP服务配置的基本上是从internet网关配置的ISP的DNS服务器。如果路由器有自己的DNS服务器，那一般也会有缓存，否则只要发现操作系统没有DNS缓存，就直接向ISP的DNS服务器请求解析。
+
+</details>
+
+<details>
+<summary><b>如何检查路由和路由表?</b></summary><br>
+  
+可以使用<code>netstat -nr</code>, <code>route -n</code>或<code>ip route show</code>命令来查看默认路由和路由表。
+
+</details>
+
+<details>
+<summary><b>127.0.0.1和localhost之间的区别是什么?</b></summary><br>
+  
+嗯，最大的不同就是你还是不得不在某处查找localhost。
+
+如果你使用<code>127.0.0.1</code>，那么软件会直接使用这个IP地址。code>gethostbyname</code>（系统函数）的某些实现会检查dotted format（可能是等效的IPv6格式）而不再查找。
+
+不然的话，必须解析主机名，并且不能保证你的hosts文件能解析正确，因为localhost可能改成一个完全不同的IP地址。
+
+这意味着，在某些系统上，可以绕过本地的hosts文件。<code>host.conf</code>文件在Linux和多数Unices上可以控制这个。
+
+如果你使用unix域套接字，速度会比TCP/IP稍快（系统开销小）。Windows默认使用TCP/IP，而Linux根据你的选择来分，如果使用localhost，为unix域套接字，如果使用<code>127.0.0.1</code>，则是TCP/IP。
+
+参考文档：
+
+- **[What is the difference between 127.0.0.1 and localhost?](https://stackoverflow.com/questions/7382602/what-is-the-difference-between-127-0-0-1-and-localhost)**
+- **[localhost vs. 127.0.0.1](https://stackoverflow.com/questions/3715925/localhost-vs-127-0-0-1)**
+
+</details>
+
+<details>
+<summary><b>如何用CLI来解析域名（使用外部DNS服务器）?</b></summary><br>
+  
+```bash
+# with host command:
+host domain.com 8.8.8.8
+# with dig command:
+dig @9.9.9.9 google.com
+# with nslookup command:
+nslookup domain.com 8.8.8.8
+```
+
+</details>
+
+<details>
+<summary><b>如何用<code>telnet</code>或<code>nc</code>测试端口能否连通?</b></summary><br>
 
 
+```bash
+# with telnet command:
+telnet code42.example.com 5432
+# with nc (netcat) command:
+nc -vz code42.example.com 5432
+```
 
+</details>
 
+<details>
+<summary><b>为什么要避免用telnet远程管理系统?</b></summary><br>
+  
+telnet使用了很不安全的连接来通信。它用纯文本格式在网络上发送数据，任何人都可以用网络工具轻松找到密码。
 
+对telnet来说，用纯文本格式来传递登陆凭证意味着在你的网路上运行嗅探器窃听telnet登陆会话的任何人都能在几秒钟找到关键信息来控制你的设备。
 
+</details>
 
+<details>
+<summary><b><code>wget</code>和<code>curl</code>之间有什么不同?</b></summary><br>
+  
+主要区别：wget可以以递归方式下载而curl不可以。wget只支持命令行，curl支持FTP，FTPS，HTTP，HTTPS，SCP，SFTP，TFTP，TELNET，DICT，LDAP，LDAPS，FILE，POP3，IMAP，SMTP，RTMP和RTSP。
 
+</details>
 
+<details>
+<summary><b>SSH keys是如何工作的?</b></summary><br>
 
+SSH代表安全的shell。它是一种协议，允许你从通过服务器A跳转到服务器B的shell会话，然后和服务器B进行交互。要建立一个SSH连接，需要远程服务器（B）运行ssh服务端进程并且用户的计算机（A）运行ssh客户端。ssh服务端和客户端都监听一个特定的网络端口（默认是22），并对连接请求进行身份验证，当用户提供了正确的凭据时生成相应的工作环境。
+  
+</details>
 
+<details>
+<summary><b>什么是包过滤器以及它是如何工作的?</b></summary><br>  
+  
+包过滤器是一种防火墙技术，它控制网络访问的方式是：监控传入和传出的包并根据包中的源地址，目的地址，协议，端口等决定是否让包传递到系统网络或直接丢弃。
+  
+</details>
+
+<details>
+<summary><b>什么是代理以及它是如何工作的?</b></summary><br>    
+  
+代理服务器是在2台终端设备之间充当中介的一台专用计算机或一种软件系统，它可以将用户或客户端的请求发送到另一台服务器中。
+  
+</details>
+
+<details>
+<summary><b>路由和网关之间的区别是什么?什么是默认路由?</b></summary><br>      
+  
+路由和网关都用于调节2个或更多独立网络之间的网络流量。网关调节的是2个完全不同的网络之间的流量，而路由调节的是相似网络之间的流量。
+
+默认网关作为一个接入点或IP路由将信息发送到另一个网络或互联网中。除非应用指定另一个网关，默认使用默认网关。
+
+网关是计算机网络中的节点（路由），是发送或接受网络中的数据的关键。多亏了网关，我们能互相通信和发送数据。
+  
+</details>
+
+<details>
+<summary><b>解释以下DNS的每个记录的功能：SOA, PTR, A, MX, 以及CNAME?</b></summary><br>      
+  
