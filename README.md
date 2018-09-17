@@ -20,7 +20,7 @@
 
 ## 基础知识
 
-### 初级系统管理员
+### :diamond_shape_with_a_dot_inside: 初级系统管理员
 
 ###### 系统方面的问题
 
@@ -672,4 +672,102 @@ SSH代表安全的shell。它是一种协议，允许你从通过服务器A跳�
 
 <details>
 <summary><b>解释以下DNS的每个记录的功能：SOA, PTR, A, MX, 以及CNAME?</b></summary><br>      
+  
+DNS记录实质上是映射的文件，用来告诉DNS服务器每个域名和其对应的IP地址，以及如何处理发送给每个域名的请求。绝大部分DNS的记录配置使用以下记录类型：A, AAAA, CNAME, MX, PTR, NS, SOA, SRV, TXT, 和NAPTR。
+
+- <b>SOA</b> - 起始授权机构记录
+- <b>A</b> - 域名指向ip地址记录
+- <b>AAAA</b> - 域名指向ipv6地址记录
+- <b>CNAME</b> - 域名指向另一个域名记录
+- <b>MX</b> - 域名指向邮件服务器地址记录
+- <b>NS</b> - 域名服务器记录
+- <b>PTR</b> - 反向解析记录
+
+</details>
+
+<details>
+<summary><b>可以用于最多30台设备的最小IPv4子网掩码是什么?</b></summary><br>      
+
+最大30台设备的话是/27 - 或子网掩码<code>255.255.255.224</code>
+
+</details>
+
+<details>
+<summary><b>简介web各种响应码?</b></summary><br>      
+
+
+- <b>1xx</b> - 信息响应 - 传递传输协议级别的信息
+- <b>2xx</b> - 成功 - 表示客户端的请求已成功接受
+- <b>3xx</b> - 重定向 - 表示客户端需要一些其他操作才能完成其请求
+- <b>4xx</b> - 客户端错误 - 这类错误码表示客户端有问题
+- <b>5xx</b> - 服务端错误 - 这类错误码表示服务端有问题
+
+</details>
+
+###### Devops问题
+
+<details>
+<summary><b>什么是版本控制?</b></summary><br>      
+
+版本控制是一个根据时间来记录文件或文件夹变化的系统，它可以让你在以后回调特定的文件版本。版本控制系统包括一个集中共享仓库，用来记录协作者提交的对文件或文件夹的更改。以下为版本控制的作用。
+
+版本控制可以让你：
+
+- 将文件恢复为之前的状态
+- 将整个项目恢复为之前的状态
+- 根据时间来比较更改内容
+- 查找可能导致问题的最后的修改是谁写的
+- 谁，什么时候提出了什么问题
+
+</details>
+
+<details>
+<summary><b>简述一些Git基本命令?</b></summary><br>      
+
+- <code>git init</code> - 创建一个新的本地仓库
+- <code>git commit -m "message"</code> - 提交更改
+- <code>git status</code> - 显示工作目录和暂存区的状态
+- <code>git push origin master</code> - 把更改推送到远程仓库项目的master分支
+
+</details>
+
+###### 网络安全问题
+
+<details>
+<summary><b>什么是错误的安全配置?</b></summary><br>
+
+当设备/程序/网络的配置方式可以被攻击者利用时，就是一种错误的安全配置。简单例子：使用默认的用户名/密码，简单的设备账户名等。
+
+</details>
+
+### :diamond_shape_with_a_dot_inside: 中级系统管理员
+
+###### 系统问题
+
+<details>
+<summary><b>简述Linux启动流程。</b></summary><br>
+  
+<b>BIOS</b>: BIOS的全称为Basic Input or Output System，它先执行系统完整性检查，然后在MBR中查找并执行bootloader。<br>
+
+<b>MBR</b>: MBR全称为Master Boot Record，MBR记录了有关GRUB的信息，并执行和加载该GRUB。<br>
+
+<b>GRUB</b>: GRUB全称为Grand Unified Bootloader。如果系统上安装了多个内核镜像，那么需要选择加载哪个内核。<br>
+
+<b>Kernel</b>: 内核挂载根文件系统并执行<code>/sbin/init</code>程序。<br>
+
+<b>Init</b>: Init程序检查<code>/etc/inittab</code>文件并决定系统运行级别。一共由7个运行级别，从0-6。Init识别默认的运行级别后加载对应的程序。<br>
+
+<b>Runlevel programs</b>: 根据设定的默认运行级别，系统执行对应的程序。
+
+</details>
+
+<details>
+<summary><b>什么是UID为0叫<code>toor</code>的账户?是被入侵了吗?</b></summary><br>
+  
+  
+  
+  
+  
+  
+  
   
