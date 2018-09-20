@@ -763,9 +763,10 @@ DNS记录实质上是映射的文件，用来告诉DNS服务器每个域名和�
 
 <details>
 <summary><b>什么是UID为0叫<code>toor</code>的账户?是被入侵了吗?</b></summary><br>
-  
-  
-  
+
+<code>toor</code>是一个超级账户root的"替代"，由root反着拼写而来。它可以在非标准的shell上使用，所以root就能在默认的shell上直接使用。
+
+因为shells不是基础发行版的一部分，而是通过端口或安装包默认安装在不同的文件系统中
   
   
   
