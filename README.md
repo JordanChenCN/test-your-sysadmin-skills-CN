@@ -3,65 +3,76 @@
 
 ---
 
-## 自我介绍
+## 基础知识
 
 ### 简单的问题
-- 你这周学习什么了吗？
-- 你在系统管理中感兴趣的是什么？
-- 你最近经历了什么技术上的挑战以及你是怎么解决的呢？
-- 介绍下你最后完成的一个重要项目？
-- 你对任何开源项目有贡献吗？
-- 介绍下你的homelab的设置？（译者注：homelab可以理解为家用的服务器，上面装有常用网络服务）
-- 你最骄傲的个人成就是什么？
-- 你犯过最大的错误是什么？
-- 你最喜欢的类unix系统是什么？
-- 你是如何管理你的知识库的（比如wiki之类）？
-- 你每天的新闻来源是？（系统管理或信息安全方面）
+- 你这周学习什么了吗?
+- 你在系统管理领域最感兴趣的是什么?
+- 你最近经历了什么技术上的挑战以及你是怎么解决的呢?
+- 介绍下你最后完成的一个重要项目?
+- 你对任何开源项目有贡献吗?
+- 介绍下你的homelab的设置?(PS:homelab可以理解为家用的服务器,上面装有常用网络服务)
+- 你最骄傲的个人成就是什么?
+- 你犯过最大的错误是什么?
+- 你最喜欢的类unix系统是什么?
+- 你是如何管理你的知识库的(比如wiki之类)?
+- 你每天的新闻来源是(系统管理,信息安全方面或其他方面)?
+- 你和开发人员是怎么互动的:各管各的还是互相合作?
+- 如果你正在采访我,你有什么想问的,前提是我非常擅长面对非一般的状况?
 
-## 基础知识
+## 基本知识
 
 ### :diamond_shape_with_a_dot_inside: 初级系统管理员
 
 ###### 系统方面的问题
 
 <details>
-<summary><b>Linux的发行版有哪些？</b></summary><br>
+<summary><b>Linux的发行版有哪些?你最喜欢哪个,为什么?</b></summary><br>
 
 - Red Hat Enterprise Linux
 - Fedora
 - CentOS
 - Debian
 - Ubuntu
+- Mint
 - SUSE Linux Enterprise Server (SLES)
 - SUSE Linux Enterprise Desktop (SLED)
 - Slackware
-- 以下为译者补充
-- Archlinux
-- Gentoo
-- Mint
+- Arch
+- Kali
+- Backbox
+
+我最喜欢的Linux发行版:
+
+- **Arch Linux**, 提供了一个友好的最小化基础系统,并可以在该基础上构建自定义操作系统.它还有个优点是拥有Arch User Repository (AUR),结合它的官方二进制仓库后可能是所有发行版中拥有最多仓库的系统.它的打包程序也很简单,所以如果安装包在官方仓库和AUR中都没有的话,自己制作一个也很简单.
+
+- **Linux Mint**, 基于Ubuntu的LTS版本构建,但有一些桌面环境不同的版本,比如Cinnamon,MATE和Xfce.Mint相当优美,它的美感非常吸引人,我尤其喜欢它的新图标主题,虽然我相当讨厌它的GTK+主题(对我来说太平淡了).我还在最新的Mint 19版本中发现了一个bug,并在两周前在他们的论坛上寻求帮助,但是至今还没有收到任何回复,让我很恼火.
+
+- **Kali Linux**, 基于Debian的Linux发行版,常用于高级渗透测试和安全审计.Kali有数百种工具来进行各种信息安全任务,比如渗透测试,安全研究,计算机取证和逆向工程.
 
 参考文档：
 - [List of Linux distributions](https://en.wikipedia.org/wiki/List_of_Linux_distributions)
+- [What is your favorite Linux distro and why?](https://www.quora.com/What-is-your-favorite-Linux-distro-and-why)
 
 </details>
 
 <details>
-<summary><b>GNU/Linux和UNIX的不同之处有哪些？（问题已删除）</b></summary><br>
+<summary><b><s>GNU/Linux和UNIX的不同之处有哪些?</s></b></summary><br>
 
 参考答案：
 
-<b>UNIX</b> - 只有大公司被允许使用UNIX的版权和名称。IBM AIX，Sun Solaris，以及HP-UX都是UNIX操作系统。大多数UNIX操作系统都是商业化的。
-- 考虑到UNIX操作系统的完整性，它的所有内容都来自同一个厂商。
-- 大多数类UNIX操作系统都是收费的。
-- UNIX操作系统有它自己的防火墙软件。
-- UNIX支持的文件系统为jfs，gpfs (AIX)，jfs，gpfs (HP-UX)，jfs，gpfs (Solaris)。
+<b>UNIX</b> - 只有大公司被允许使用UNIX的版权和名称.IBM AIX，Sun Solaris，以及HP-UX都是UNIX操作系统.大多数UNIX操作系统都是商业化的.
+- 考虑到UNIX操作系统的完整性,它的所有内容都来自同一个厂商.
+- 大多数类UNIX操作系统都是收费的.
+- UNIX操作系统有它自己的防火墙软件.
+- UNIX支持的文件系统为jfs,gpfs (AIX),jfs,gpfs (HP-UX),jfs,gpfs (Solaris).
 
-<b>GNU/Linux</b>是UNIX的克隆，但是如果基于可移植操作系统接口标准考虑的话，那么Linux也能视为UNIX。
-- Linux是一种内核，但是也有人认为Linux是操作系统的名称，Linux内核是Linux系统的一部分。
-- Linux是免费的，你可以从网上下载或基于GNU许可重新开发发行。
-- 所有Linux发行版都包括了GUI系统，GNU应用，安装和管理工具，GNU c/c++ compilers，编辑工具（vi），以及可选的应用程序：OpenOffice，Firefox等。
-- Linux自带基于firewall的开源Netfilter和IPTables来保护你的服务器和桌面免受黑客入侵破解。
-- Linux默认支持使用ext3或ext4文件系统。
+<b>GNU/Linux</b>是UNIX的克隆,但是如果基于可移植操作系统接口标准考虑的话,那么Linux也能视为UNIX.
+- Linux是一种内核,但是也有人认为Linux是操作系统的名称,Linux内核是Linux系统的一部分.
+- Linux是免费的,你可以从网上下载或基于GNU许可重新开发发行.
+- 所有Linux发行版都包括了GUI系统,GNU应用,安装和管理工具,GNU c/c++ compilers,编辑工具(vi),以及可选的应用程序:OpenOffice,Firefox等.
+- Linux自带基于firewall的开源Netfilter和IPTables来保护你的服务器和桌面免受黑客入侵破解.
+- Linux默认支持使用ext3或ext4文件系统.
 
 参考文档：
 - [The Great Debate: Is it Linux or GNU/Linux?](https://www.howtogeek.com/139287/the-great-debate-is-it-linux-or-gnulinux/)
@@ -70,18 +81,18 @@
 </details>
 
 <details>
-<summary><b>Linux和UNIX的共同之处有哪些？（问题已删除）</b></summary><br>
+<summary><b><s>Linux和UNIX的共同之处有哪些？</s></b></summary><br>
 
-- GUI，文件，以及桌面管理（KDE，Gnome）
-- Shells（ksh，csh，bash）
-- 可选的办公应用：OpenOffice.org等
-- 开发工具：perl，php，python，GNU c/c++ compilers等
+- GUI,文件,以及桌面管理(KDE,Gnome)
+- Shells(ksh,csh,bash)
+- 可选的办公应用:OpenOffice.org等
+- 开发工具:perl,php,python，GNU c/c++ compilers等
 - Posix 接口
 
 </details>
 
 <details>
-<summary><b>什么是Linux，并解释下它的组成部分？（问题已删除）</b></summary><br>
+<summary><b><s>什么是Linux，并解释下它的组成部分？</s></b></summary><br>
 
 Linux操作系统包括以下3部分：
 
@@ -111,7 +122,7 @@ Linux是这四个中最新的。严格来说，它就是个“内核”；但是
 </details>
 
 <details>
-<summary><b>什么是CLI？</b></summary><br>
+<summary><b>什么是CLI</b></summary><br>
 
 <b>CLI</b>是Command Line Interface的缩写。命令行是管理系统最有用的方式之一。在Linux中，CLI就是这个让用户输入命令完成任务的接口，CLI非常强大，但要避免输错。
 
@@ -133,7 +144,7 @@ BASH是我的最爱。它很棒，非常方便，我喜欢它的语法，它的�
 </details>
 
 <details>
-<summary><b>描述下类Unix系统中的root账号？(已删除)</b></summary><br>
+<summary><b><s>描述下类Unix系统中的root账号？</s></b></summary><br>
   
 <b>root</b>是系统管理员账号，它有系统的全部控制权限（是unix系统中权限最大的账号）。root没有强加的安全限制，这意味着它很容易就能执行管理权限。root的UID总是0。
 
@@ -224,7 +235,7 @@ nohup command >file 2>&1 &
 </details>
 
 <details>
-<summary><b>什么是UID和GID？（已删除）</b></summary><br>
+<summary><b><s>什么是UID和GID？</s></b></summary><br>
   
 UID和GID是用户和组的数字标识符。类Unix操作系统通过一个称为用户标识符的数值来标识内核中的用户，这个标识符经常缩写为用户ID或UID。UID以及组标识符（GID）和其他访问控制标准一起决定了用户可以访问系统的哪些资源。
 
@@ -324,7 +335,7 @@ Linux负载平均值就是系统负载平均值，它将需要在系统上运行
 </details>
 
 <details>
-<summary><b>日志专用在哪？</b></summary><br>
+<summary><b>系统日志的作用？</b></summary><br>
 
 日志在文件系统中有专用的区域，跟踪了系统所有变化。由于日志存在，当系统崩溃时，可以降低文件系统损坏的可能。
 
@@ -639,7 +650,7 @@ telnet使用了很不安全的连接来通信。它用纯文本格式在网络�
 </details>
 
 <details>
-<summary><b>SSH keys是如何工作的?</b></summary><br>
+<summary><b>什么是SSH以及它是如何工作的?</b></summary><br>
 
 SSH代表安全的shell。它是一种协议，允许你从通过服务器A跳转到服务器B的shell会话，然后和服务器B进行交互。要建立一个SSH连接，需要远程服务器（B）运行ssh服务端进程并且用户的计算机（A）运行ssh客户端。ssh服务端和客户端都监听一个特定的网络端口（默认是22），并对连接请求进行身份验证，当用户提供了正确的凭据时生成相应的工作环境。
   
