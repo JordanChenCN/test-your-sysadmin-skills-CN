@@ -1883,7 +1883,7 @@ __EOF__
 <details>
 <summary><b>什么是inode?如何查找和使用文件的inode编号?</b></summary><br>
 
-**inode**是Linux和其他类Unix操作系统上的文件系统的一种数据结构，用来存储除了文件名和实际数据外的所有文件信息.数据结构是一种高效的数据存储方式.
+**inode**是Linux和其他类Unix操作系统上的文件系统的一种数据结构,用来存储除了文件名和实际数据外的所有文件信息.数据结构是一种高效的数据存储方式.
 
 Unix文件实际存储在磁盘上的两个不同部分:数据块和inode.暂不涉及超级块和其他更高深的信息.数据块存储了文件的内容,而关于该文件的信息存储在inode中.
 
@@ -4662,21 +4662,343 @@ gnutls-cli --disable-sni -p 443 google.com
 <summary><b>什么是测试NFS性能的正确方法?
 </b></summary><br>
 
+最佳基准是"常用程序".20个人同时编译Linux内核和同样一群人同时登陆操作账户对NFS系统的负载是完全不一样的.
 
+不过我们也有一些很好的测试工具.
 
+- <b>boonie</b> - 一个经典的性能评估工具测试.是一个硬盘和文件系统的基准性能测试工具,它通过一系列的简单测试来生成硬盘和文件系统的性能参数.主要对三个方面做基准测试:数据读/写速度,每秒可以完成的磁盘寻道次数和每秒可以完成的文件元数据操作次数.
 
+- <b>DBench</b> - 用来让独立开发人员调试和测试SAMBA.它由原始的SAMBA工具的启发而来.
 
+- <b>IOZone</b> - 性能测试套件.兼容POSIX和64位.此工具来自L.S.E的文件系统测试.主要功能:POSIX异步I/O,Mmap()文件I/O,普通文件I/O单文件测量,多文件流测量,分布式文件服务器(集群)测量等.
 
+</details>
 
+<details>
+<summary><b>需要阻止来自同一子网的多个IP地址,对系统来说遍历iptables规则集或黑洞路由哪个更有效?</b></summary><br>
 
+如果系统的路由表中定义了数千条路由,而iptables规则中没有任何内容,那么输入iptables规则实际上可能更有效.
 
+然而,在大多数系统中,路由表都很小,在这种情况下,使用空路由会更有效.尤其是如果已经有了很多的iptables规则时.
 
+假设阻止是基于源地址而不是目标地址,那么在**raw/PREROUTING**中执行**DROP**就可以了,这样能在做出任何路由决策之前就丢弃数据包.
 
+但请记住,iptables规则本质上是一个链表,为了在阻止大量地址时获得最佳性能,应该使用`ipset`.
 
+另一方面,如果按目标地址阻止,那么在使用路由表和iptables可能没有什么区别,**除非**如果源IP是由欺骗性的.在这种情况下,黑洞条目可能会消耗路由缓存资源,所以**raw/PREROUTING**仍然是首选.
 
+在尝试将数据包发送回攻击者之前,传出路由无关紧要.但那时将承担了大部分设置套接字的成本,甚至可能有线程阻塞等待等网络问题.
 
+iptables或其他防火墙允许系统阻止传入流量并在它到达服务器上的守护程序进程之前将其丢弃.在当前用例中,它似乎显然更优越.
 
+```bash
+iptables -A INPUT -s 192.168.200.0/24 -j DROP
+```
 
+当你在Linux/Unix系统上定义路由时,它会通知系统将网络通信路由到此指定位置以便与该IP地址进行通信.
+
+当你定义空路由时,它会告诉系统丢弃所有发送给指定IP地址的网络通信.这意味着任何基于TCP的网络通信将无法建立,因为服务器将无法再发送SYN/ACK回复.任何基于UDP的网络通信仍能被接收,但是系统将不再向原始IP发送任何响应.
+
+同时,iptables可以在链中创建数万条规则,但链是按顺序遍历,直到在每个数据包上找到对应匹配的.因此,大量规则可能导致系统花费大量的CPU时间.
+
+路由规则比iptables简单得多.iptables可以基于许多不同的变量,包括协议,源和目标数据包,甚至是在当前数据包之前发送的其他数据包来进行匹配.
+
+而在路由规则中,最重要的就是远程IP地址,因此非常容易优化.此外,许多系统都有很多路由规则.典型的系统可能只有5或10个,但充当BGP路由器的系统可能有数万个.所以,在很长一段时间内都在持续优化为特定数据包选择正确的路由.
+
+在技术方面意味着系统将从攻击者那里接收数据,但不对其做出响应.
+
+```bash
+ip route add blackhole 192.168.200.0/24
+```
+
+或
+
+```bash
+ip route add 192.168.200.0/24 via 127.0.0.1
+```
+
+参考文档:
+
+- [The difference between iptables DROP and null-routing.](https://www.tummy.com/blogs/2006/07/27/the-difference-between-iptables-drop-and-null-routing/)
+
+</details>
+
+<details>
+<summary><b>如何使用<code>scp</code>操作第2个远程主机?</b></summary><br>
+
+使用`ssh`:
+
+```bash
+ssh user1@remote1 'ssh user2@remote2 "cat file"' > file
+```
+
+使用`tar` (使用压缩):
+
+```bash
+ssh user1@remote1 'ssh user2@remote2 "cd path2; tar cj file"' | tar xj
+```
+
+使用`ssh`和端口转发隧道:
+
+```bash
+#首先,打开隧道
+ssh -L 1234:remote2:22 -p 45678 user1@remote1
+
+#然后使用隧道直接从remote2复制文件
+scp -P 1234 user2@localhost:file .
+```
+
+</details>
+
+<details>
+<summary><b>如何减少动态网站的加载时间?</b></summary><br>
+
+- 优化网页
+- 缓存网页
+- 优质的网络托管
+- 压缩文本文件
+- apache/nginx调优
+
+</details>
+
+<details>
+<summary><b>在浏览器中键入api.example.com并按回车键时,哪些类型的dns缓存会生效?</b></summary><br>
+
+浏览器先检查该域名是否在其缓存中(要查看Chrome中的DNS缓存,请转到`chrome//net-internals/#dns`).当该缓存查询失败时,它会要求操作系统来解析.
+
+操作系统会检查其解析器自己的缓存.如果查询失败,它会转向询问操作系统配置的DNS服务器.
+
+操作系统配置的DNS服务器通常由DHCP从路由器配置,一般是ISP的DNS服务器,由DHCP从Internet网关传到路由器.
+
+如果路由器拥有自己的DNS服务器,它可能拥有自己的缓存,否则只要发现操作系统缓存为空,就应该直接指向ISP的DNS服务器.
+
+参考文档:
+
+- [What happens when...](https://github.com/alex/what-happens-when)
+- [DNS Explained - How Your Browser Finds Websites](https://scotch.io/tutorials/dns-explained-how-your-browser-finds-websites)
+- [Firefox invalidate dns cache](https://stackoverflow.com/questions/13063496/firefox-invalidate-dns-cache)
+
+</details>
+
+<details>
+<summary><b><code>Cache-Control: max-age=0</code>和<code>Cache-Control: no-cache</code>的不同之处是什么?</b></summary><br>
+
+**从源服务器发送**
+
+`max-age=0`只是用来告诉缓存(和客户端)响应从一开始就是陈旧的,所以它们**应该**在使用缓存副本之前重新验证响应(例如使用If-Not-Modified标头)而`no-cache`告诉他们**必须**在使用缓存副本之前重新验证.
+
+换句话说,缓存有时可能会选择使用陈旧的响应(虽然我认为他们必须添加一个警告标题),但是`no-cache`表示无论如何都不允许使用陈旧的响应.
+
+**从客户端发送**
+
+如果客户端发送带有`Cache-Control:max-age=0`(又称"端到端重新验证")的请求,则沿途的每个缓存将重新验证其缓存条目(如使用If-Not-Modified header)直到源服务器.如果回复是304(未修改),则可以使用该缓存.
+
+另一方面,发送带有`Cache-Control:no-cache`(又称"端到端重新加载")的请求不会让缓存重新生效,服务器在响应时不得使用缓存副本.
+
+</details>
+
+<details>
+<summary><b>设置<code>Access-Control-Allow-Origin</code>有哪些安全隐患?</b></summary><br>
+
+请求的资源通过<code>Access-Control-Allow-Origin: *</code>响应表示该资源允许与每个源共享.这基本上意味着任何站点都可以向你的站点发送XHR请求并访问服务器的响应,如果你没有实现此CORS响应,则不会出现这种情况.
+
+因此,任何网站都可以代表其访问者向你的网站提出请求并处理其响应.如果网站使用了的某些类似基于浏览器自动提供的内容的身份验证或授权方案(Cookie,基于cookie的会话等)等功能,那么第三方站点触发的请求也将使用它们.
+
+</details>
+
+<details>
+<summary><b>使用<code>netcat</code>来创建一次性TCP或UDP代理.</b></summary><br>
+
+```bash
+### TCP -> TCP
+nc -l -p 2000 -c "nc [ip|hostname] 3000"
+
+### TCP -> UDP
+nc -l -p 2000 -c "nc -u [ip|hostname] 3000"
+
+### UDP -> UDP
+nc -l -u -p 2000 -c "nc -u [ip|hostname] 3000"
+
+### UDP -> TCP
+nc -l -u -p 2000 -c "nc [ip|hostname] 3000"
+```
+
+</details>
+
+<details>
+<summary><b>使用<code>nmap</code>来简析3种回避防火墙的技术.</b></summary><br>
+
+**使用诱饵地址**
+
+```bash
+# 生成随机数量的诱饵.
+nmap -D RND:10 [target]
+
+# 手动指定诱饵的IP地址.
+nmap -D decoy1,decoy2,decoy3 [target]
+```
+
+在这种类型的扫描中,可以指示Nmap欺骗来自其他主机的数据包.在防火墙日志中,它不仅包括真实的IP地址,还有诱饵的IP地址,因此要判断是哪个IP进行的扫描将更加困难.
+
+**规范源端口号**
+
+```bash
+nmap --source-port 53 [target]
+```
+
+许多管理员在配置防火墙时遇到的常见错误是:设置允许来自特定端口号的所有传入流量的规则.Nmap的<code>--source-port</code>选项可利用这种错误配置.用于此类扫描的常用端口是:20,53和67.
+
+**附加随机数据**
+
+```bash
+nmap --data-length 25 [target]
+```
+
+许多防火墙通过查看其大小来检查数据包,以便识别潜在的端口扫描.这是因为许多扫描程序会发送具有特定大小的数据包.为了避免这种检测,可以使用命令<code>--data-length</code>来添加其他数据并发送大小不同于默认值的数据包.
+
+**扫描TCP ACK**
+
+```bash
+nmap -sA [target]
+```
+
+发送ACK数据包而不是SYN数据包总是好的,由于防火墙将ACK数据包视为SYN的响应包,所以任何远程计算机上的防火墙即使收到ACK数据包也无法创建日志.
+
+参考文档:
+
+- [Nmap - Techniques for Avoiding Firewalls](https://pentestlab.blog/2012/04/02/nmap-techniques-for-avoiding-firewalls/)
+
+</details>
+
+###### Devops问题 (5)
+
+<details>
+<summary><b>简述Flap Detection在Nagios中是如何工作的?</b></summary><br>
+
+当服务或主机的状态频繁更改时就会发生**Flapping**,这会产生很多报警和报警恢复通知.
+
+一旦定义了**Flapping**,即告诉Nagios如何检测**Flapping**,那么每当Nagios检查主机或服务的状态时,将先检查它是否已经开始或停止振荡.
+
+Nagios遵循以下给定的程序来做到这一点：
+
+- 存储分析最后21次主机或服务历史检查的检查结果,并确定状态变化/转换发生的位置
+- 使用状态转换来确定主机或服务的状态变化值百分比
+- 将状态变化值百分比与抖动阈值的高低进行比较
+
+</details>
+
+<details>
+<summary><b>容器化相对于虚拟化有什么优势?</b></summary><br>
+
+以下是容器化相对于虚拟化的优势:
+
+- 容器提供实时配置和可扩展性,VMs提供延迟的配置
+- 与VMs相比,容器是轻量级的
+- 与容器相比,VMs的性能有限
+- 与VMs相比,容器具有更好的资源利用率
+
+</details>
+
+<details>
+<summary><b>从Docker Hub安装Docker应用程序(例如Apache,MySQL)的方式是否适用于生产环境?简述其中的安全问题和解决方案.***</b></summary><br>
+
+待续.
+
+</details>
+
+<details>
+<summary><b>简介根据下列要求的LXC和LXD的一些常见用例.</b></summary><br>
+
+- 需要隔离的开发环境,同时不污染主机
+- 隔离生产服务器,以及在容器中运行多个服务的可能性
+- 需要测试在不同操作系统环境下同一软件的多个版本
+- 无需在物理主机上安装即可尝试不同的或新版本的GNU/Linux发行版
+- 尝试一些软件或开发堆栈,可能会或可能不会在以后使用
+- 在主开发机器或生产服务器中安装多种类型的软件,并在较长时间内维护它们
+- 在生产机器上实际执行任何安装或维护任务之前先演示运行
+- 通过为不同用户或客户端运行多个服务,更好地利用和分配服务器资源
+- 高密度的虚拟专用服务器(VPS),可以实现托管隔离而无需完全虚拟化的成本
+- 与虚拟机的复杂访问方法相比,从容器可以轻松访问主机硬件
+- 具有不同自定义的多个构建环境
+
+</details>
+
+<details>
+<summary><b>如何确保Redis集群的安全?</b></summary><br>
+
+- 通过防火墙保护特定的Redis实例免受外部访问
+- 如果只有本地客户端访问它,则将其绑定到127.0.0.1
+- 沙盒环境
+- 启用**AUTH**
+- 启用**保护模式**
+- 使用数据加密(如`spiped`)
+- 禁用特定命令
+- 使用**ACLs**
+
+参考文档:
+
+- [Redis Security](https://redis.io/topics/security)
+- [A few things about Redis security](http://antirez.com/news/96)
+
+</details>
+
+###### 网络安全问题 (5)
+
+<details>
+<summary><b>什么是OWASP应用安全验证标准?请简述. ***</b></summary><br>
+
+待续.
+
+</details>
+
+<details>
+<summary><b>什么是CSRF?</b></summary><br>
+
+**跨站请求伪造**是一个Web应用程序漏洞.服务端会直接处理该请求而不会检查该请求是否来自可信客户端.CSRF攻击者在用户已经登录目标网站之后,诱使用户访问一个攻击页面,利用目标网站对用户的信任,以用户身份在攻击页面对目标网站发起伪造用户操作的请求,从而达到攻击目的.
+
+</details>
+
+<details>
+<summary><b>策略,流程和指南之间有什么区别?</b></summary><br>
+
+**安全策略**定义了组织的安全目标和安全框架.**流程**是一个详细的步骤,用来记录一步步实施重要安全机制所需的确切操作.**指南**是可以变动的提议,用于创建流程.
+
+</details>
+
+<details>
+<summary><b>在IDS(入侵检测系统)中,什么是false positive和false negative?</b></summary><br>
+
+如果系统设备生成实际未发生入侵的警报时:这是**false positive**.如果系统设备没有生成任何警报但实际发生了入侵:这是**false negative**.
+
+</details>
+
+<details>
+<summary><b>Web服务器强化的10个点.</b></summary><br>
+
+例如:
+
+- 如果是新安装的服务器,请保护其免受恶意网络流量的影响,直到安装并加固操作系统
+- 为`/tmp`创建一个单独的分区,并将选项设置为`nodev`,`nosuid`和`noexec`
+- 为`/var`,`/var/log`,`/var/log/audit`和`/home`创建单独的分区
+- 启用虚拟内存随机域
+- 删除遗留服务,如`telnet-server`,`rsh`,`rlogin`,`rcp`,`ypserv`,`ypbind`,`tftp`,`tftp-server`,`talk`,`talk-server`
+- 通过防火墙和其他访问控制技术,限制认证用户的服务与主机上运行的服务连接
+- 禁止接收源路由数据包
+- 启用**TCP/SYN**cookie
+- 禁用SSH root登录
+- 安装和配置**AIDE**
+- 安装和配置**OSsec HIDS**
+- 配置**SELinux**
+- 所有管理员或root访问记录都必须被记录
+- 启用并测试系统帐户,组成员身份及其相关权限的完整性检查
+- 设置密码创建要求(如使用PAM)
+
+参考文档:
+
+- [Security Harden CentOS 7](https://highon.coffee/blog/security-harden-centos-7/)
+- [CentOS 7 Server Hardening Guide](https://www.lisenet.com/2017/centos-7-server-hardening-guide/)
+
+</details>
 
 
 
