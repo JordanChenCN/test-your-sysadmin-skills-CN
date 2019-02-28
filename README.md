@@ -5,7 +5,7 @@
 
 ## 基础知识
 
-### 简单的问题
+### :diamond_shape_with_a_dot_inside: 简单的问题
 - 你这周学习什么了吗?
 - 你在系统管理领域最感兴趣的是什么?
 - 你最近经历了什么技术上的挑战以及你是怎么解决的呢?
@@ -3100,7 +3100,7 @@ XSS的对策是输入验证,实施CSP(内容安全策略)等.
 
 </details>
 
-### :diamond_shape_with_a_dot_inside: <a name="senior-sysadmin">高级系统管理员</a>
+### :diamond_shape_with_a_dot_inside: 高级系统管理员
 
 <details>
 <summary><b>简述你当前负责的系统架构.并说说它还有什么可扩展的或容错的地方 ***</b></summary><br>
@@ -5000,9 +5000,708 @@ Nagios遵循以下给定的程序来做到这一点：
 
 </details>
 
+## 隐秘的知识
 
+### :diamond_shape_with_a_dot_inside: 资深系统管理员
 
+<details>
+<summary><b>应用程序遇到一些性能问题,需要找到要优化的代码.如何在Linux环境中配置来实现?</b></summary><br>
 
+>理想情况下,需要一个应用程序可以附加到进程并定期记录快照:线程的内存使用数和CPU使用率等.
 
+1. 在批处理模式下使用`top`.它以批处理模式运行,直到它被终止或直到N次迭代完成:
 
-</details> 
+```bash
+top -b -p `pidof a.out`
+```
+
+或
+
+```bash
+top -b -p `pidof a.out` -n 100
+```
+
+2. 也可以使用ps(例如在shell脚本中):
+
+```bash
+ps --format pid,pcpu,cputime,etime,size,vsz,cmd -p `pidof a.out`
+```
+
+>需要一些方法来记录Linux机器上的应用程序的性能.
+
+1. 记录性能数据:
+
+```bash
+perf record -p `pidof a.out`
+```
+
+记录10s:
+
+```bash
+perf record -p `pidof a.out` sleep 10
+```
+
+调用图形界面记录:
+
+```bash
+perf record -g -p `pidof a.out`
+```
+
+2) 分析记录的数据
+
+```bash
+perf report --stdio
+perf report --stdio --sort=dso -g none
+perf report --stdio -g none
+perf report --stdio -g
+```
+
+**这是一个分析测试程序的示例**
+
+1. 运行程序(c++):
+
+```bash
+./my_test 100000000
+```
+
+2. 记录运行中程序的性能数据:
+
+```bash
+perf record -g  -p `pidof my_test` -o ./my_test.perf.data sleep 30
+```
+
+3. 分析每个模块的负载:
+
+```bash
+perf report --stdio -g none --sort comm,dso -i ./my_test.perf.data
+
+# Overhead  Command                 Shared Object
+# ........  .......  ............................
+#
+    70.06%  my_test  my_test
+    28.33%  my_test  libtcmalloc_minimal.so.0.1.0
+     1.61%  my_test  [kernel.kallsyms]
+```
+
+4. 分析每个函数的负载:
+
+```bash
+perf report --stdio -g none -i ./my_test.perf.data | c++filt
+
+# Overhead  Command                 Shared Object                       Symbol
+# ........  .......  ............................  ...........................
+#
+    29.30%  my_test  my_test                       [.] f2(long)
+    29.14%  my_test  my_test                       [.] f1(long)
+    15.17%  my_test  libtcmalloc_minimal.so.0.1.0  [.] operator new(unsigned long)
+    13.16%  my_test  libtcmalloc_minimal.so.0.1.0  [.] operator delete(void*)
+     9.44%  my_test  my_test                       [.] process_request(long)
+     1.01%  my_test  my_test                       [.] operator delete(void*)@plt
+     0.97%  my_test  my_test                       [.] operator new(unsigned long)@plt
+     0.20%  my_test  my_test                       [.] main
+     0.19%  my_test  [kernel.kallsyms]             [k] apic_timer_interrupt
+     0.16%  my_test  [kernel.kallsyms]             [k] _spin_lock
+     0.13%  my_test  [kernel.kallsyms]             [k] native_write_msr_safe
+
+  ...
+```
+
+5. 分析调用链:
+
+```bash
+perf report --stdio -g graph -i ./my_test.perf.data | c++filt
+
+# Overhead  Command                 Shared Object                       Symbol
+# ........  .......  ............................  ...........................
+#
+    29.30%  my_test  my_test                       [.] f2(long)
+            |
+            --- f2(long)
+               |
+                --29.01%-- process_request(long)
+                          main
+                          __libc_start_main
+
+    29.14%  my_test  my_test                       [.] f1(long)
+            |
+            --- f1(long)
+               |
+               |--15.05%-- process_request(long)
+               |          main
+               |          __libc_start_main
+               |
+                --13.79%-- f2(long)
+                          process_request(long)
+                          main
+                          __libc_start_main
+
+  ...
+```
+
+所以这样能知道程序在哪里花费的时间比较长.
+
+另外,还可以使用`pstack`或`lsstack`.
+
+其他工具有Valgrind.首先运行:
+
+```bash
+valgrind --tool=callgrind --dump-instr=yes -v --instr-atstart=no ./binary > tmp
+```
+
+当它工作且我们需要分析时,应该在另一个窗口运行:
+
+```bash
+callgrind_control -i on
+```
+
+分析一段时间后,需要关闭并停止整个任务,则输入:
+
+```bash
+callgrind_control -k
+```
+
+当前目录中会有一些callgrind.out.*的文件.查看分析结果则使用:
+
+```bash
+kcachegrind callgrind.out.*
+```
+
+建议在下一个窗口中单击**Self**列标题,否则显示`main()`是最耗时的任务.
+
+参考文档:
+
+- [Tracing processes for fun and profit](http://techblog.rosedu.org/tracing-processes-for-fun-and-profit.html)
+
+</details>
+
+<details>
+<summary><b>Linux系统上只安装了有限数量的软件包,且telnet不可用.如何使用sysfs虚拟文件系统测试所有接口上的连接(除了环回地址).</b></summary><br>
+
+举例:
+
+```bash
+#!/usr/bin/bash
+
+for iface in $(ls /sys/class/net/ | grep -v lo) ; do
+
+  if [[ $(cat /sys/class/net/$iface/carrier) = 1 ]] ; then state=1 ; fi
+
+done
+
+if [[ $state -ne 0 ]] ; then echo "not connection" > /dev/stderr ; exit ; fi
+```
+
+</details>
+
+<details>
+<summary><b>需要使用负载将POST重写为外部API,但POST请求会丢失URL上传递的参数.如何解决这个问题(如在Nginx中)以及这种行为的原因是什么?</b></summary><br>
+
+这个问题是由于外部重定向永远不会重发**POST**数据.这是写入HTTP规范的(查看`3xx`部分).任何执行此操作的客户端都违反了规范.
+
+**POST**数据应该在请求正文中传递,如果执行了标准重定向,则会丢弃该数据.
+
+如下:
+
+```
+   +-------------------------------------------+-----------+-----------+
+   |                                           | Permanent | Temporary |
+   +-------------------------------------------+-----------+-----------+
+   |  允许将请求方法从POST更改为GET              | 301       | 302       |
+   |  不允许将请求方法从POST更改为GET            | 308       | 307       |
+   +-------------------------------------------+-----------+-----------+
+```
+
+可以尝试使用HTTP状态代码**307**,任何符合RFC的浏览器就会重复发布请求.只需要编写一个HTTP状态代码为**307**或**308**的Nginx重写规则即可:
+
+```bash
+location / {
+    proxy_pass              http://localhost:80;
+    client_max_body_size    10m;
+}
+
+location /api {
+    # HTTP 307 only for POST method.
+    if ($request_method = POST) {
+        return 307 https://api.example.com?request_uri;
+    }
+
+    # You can keep this for non-POST requests.
+    rewrite ^ https://api.example.com?request_uri permanent;
+
+    client_max_body_size    10m;
+}
+```
+
+应使用HTTP状态代码**307**或**308**来代替**301**,因为**301**会把请求方法从**POST**更改为**GET**.
+
+参考文档:
+
+- [Redirection on Apache (Maintain POST params)](https://stackoverflow.com/questions/17295085/redirection-on-apache-maintain-post-params)
+- [Why doesn't HTTP have POST redirect?](https://softwareengineering.stackexchange.com/questions/99894/why-doesnt-http-have-post-redirect)
+
+</details>
+
+<details>
+<summary><b>写两条黄金法则来减少黑客入侵系统的影响.</b></summary><br>
+
+1) **最小特权原则**
+
+应该将服务配置为由完成服务任务所需的最小权限的用户来运行,这样即使黑客侵入也能有效限制他们.
+
+例如,使用zero-day攻击进入Apache webserver服务器的黑客只能使用该进程可以访问的系统内存和文件资源.黑客能够下载html和php源文件,并可能会查看mysql数据库,但他们不能获得root权限或超出apache可访问的文件.
+
+许多Apache webserver在安装时会默认创建'apache'用户和组,这样可以在Apache主配置文件(`httpd.conf`)配置以便让这些组运行apache.
+
+2) **特权分离原则**
+
+如果网站只需要对数据库有只读访问权限,则创建只有只读权限的帐户,且仅创建该数据库.
+
+**SElinux**是创建安全环境的不错选择,`app-armor`是另一种工具.**Bastille**则是强化前的首选.
+
+通过将已被泄露的服务的功能分离到其自己的"Box"中来减少任何攻击的影响.
+
+3) **使用白名单而不是黑名单**
+
+白名单比黑名单更安全.
+
+一个专属俱乐部永远不会试图列出所有不能进来的人;他们会列出所有可以进入的人,并排除那些不在列表中的人.
+
+同样,尝试列出所有不应该访问机器的内容也是注定要失败的.列表限制程序/IP地址/用户的访问将更有效.
+
+当然,和其他任何事情一样,这涉及一些权衡.具体而言,白名单非常不方便并且需要不断维护.
+
+为了在权衡中更进一步,可以通过断开计算机与网络的连接来获得极大的安全性.
+
+**其他要点**:
+
+使用可用的工具.我们很难做到像安全专家一样好,所以要用其他工具来保护自己.
+
+- 公钥加密提供了出色的安全性
+- 强制执行密码复杂性
+- 了解为什么要对上述规则进行例外处理 - 定期审查例外情况
+- 让某人为失败负责会让你保持警觉
+
+参考文档:
+
+- [How to prevent zero day attacks (original)](https://serverfault.com/questions/391370/how-to-prevent-zero-day-attacks)
+
+</details>
+
+<details>
+<summary><b>如何使用<code>curl</code>测量一次请求和响应的时间?</b></summary><br>
+
+`curl`支持格式化输出以获取请求的详细信息(关于详细信息请参阅`curl`的帮助文档,在`-w| -write-out 'format'`中).基于题目目的,我们将仅关注所提供的时序细节.
+
+1. 创建新文件`curl-format.txt`,并复制下文:
+
+```bash
+    time_namelookup:  %{time_namelookup}\n
+       time_connect:  %{time_connect}\n
+    time_appconnect:  %{time_appconnect}\n
+   time_pretransfer:  %{time_pretransfer}\n
+      time_redirect:  %{time_redirect}\n
+ time_starttransfer:  %{time_starttransfer}\n
+                    ----------\n
+         time_total:  %{time_total}\n
+```
+
+2. 请求:
+
+```bash
+curl -w "@curl-format.txt" -o /dev/null -s "http://example.com/"
+```
+
+该命令做了什么:
+
+- `-w "@curl-format.txt"` - 让cURL使用格式化文件
+- `-o /dev/null` - 重定向请求的输出到/dev/null
+- `-s` - 让cURL不显示进度表
+- `http://example.com/` - 请求的地址.如果URL具有"&"查询字符串参数,请使用引号.
+
+</details>
+
+<details>
+<summary><b>什么原因需要把ext4 journal移动到另一个磁盘/分区上? ***</b></summary><br>
+
+待续.
+
+参考文档:
+
+- [ext4: using external journal to optimize performance](https://raid6.com.au/posts/fs_ext4_external_journal/)
+- [How to move an ext4 journal](https://unix.stackexchange.com/questions/278998/how-to-move-an-ext4-journal)
+
+</details>
+
+<details>
+<summary><b>假设你正在参加安全会议.成员们争论如何在网络核心上安装OpenBSD防火墙.请去讲台并表达对此解决方案的看法,比如有什么利弊和原因? ***</b></summary><br>
+
+待续.
+
+</details>
+
+<details>
+<summary><b>有没有办法在Nginx中使用Access-Control-Allow-Origin标头来允许多个跨域?</b></summary><br>
+
+此正则表达式可以轻松匹配域和子域列表:
+
+```bash
+location ~* \.(?:ttf|ttc|otf|eot|woff|woff2)$ {
+   if ( $http_origin ~* (https?://(.+\.)?(domain1|domain2|domain3)\.(?:me|co|com)$) ) {
+      add_header "Access-Control-Allow-Origin" "$http_origin";
+   }
+}
+```
+
+更详细的配置:
+
+```bash
+location / {
+
+    if ($http_origin ~* (^https?://([^/]+\.)*(domainone|domaintwo)\.com$)) {
+        set $cors "true";
+    }
+
+    # Nginx doesn't support nested If statements. This is where things get slightly nasty.
+    # Determine the HTTP request method used
+    if ($request_method = 'GET') {
+        set $cors "${cors}get";
+    }
+    if ($request_method = 'POST') {
+        set $cors "${cors}post";
+    }
+
+    if ($cors = "true") {
+        # Catch all in case there's a request method we're not dealing with properly
+        add_header 'Access-Control-Allow-Origin' "$http_origin";
+    }
+
+    if ($cors = "trueget") {
+        add_header 'Access-Control-Allow-Origin' "$http_origin";
+        add_header 'Access-Control-Allow-Credentials' 'true';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+    }
+
+    if ($cors = "truepost") {
+        add_header 'Access-Control-Allow-Origin' "$http_origin";
+        add_header 'Access-Control-Allow-Credentials' 'true';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+    }
+
+}
+```
+
+</details>
+
+<details>
+<summary><b><code>:(){ :|:& };:</code>是什么,以及当你登陆系统后如何停止该代码?</b></summary><br>
+
+这是一个**fork炸弹**.
+
+- `:()` - 定义了一个函数.`:`是函数名称,空括号表示它不接受任何参数
+- `{ }` - 这些字符显示了定义函数的开头和结尾
+- `:|:` - 这个将`:`函数副本加载到内存中并通过管道输出给另一个`:`函数副本,这些都需要加载到内存中.
+- `&` - 这将使进程成为后台进程,这样即使父进程被自动终止,子进程也不会被杀死
+- `:` - 最后的`:`会执行这个函数并导致连锁反应.
+
+保护多用户系统的最佳方法是使用**PAM**来限制用户可以使用的进程数.fork炸弹最大的问题是它占用了过多的过程资源.
+
+因此,如果已登录系统,我们有两种方法来尝试解决此问题:
+- 执行**SIGSTOP**命令来停止进程:`killall -STOP -u user1`
+- 如果不能在命令行运行,那么就不得不使用`exec`强制它运行(由于所有进程都被使用):`exec killall -STOP -u user1`
+
+防止fork炸弹最好的方法就是避免出现问题.
+
+</details>
+
+<details>
+<summary><b>如何恢复已经删除但Apache仍保持打开的文件?</b></summary><br>
+
+如果文件已被删除但仍处于打开状态,则表示该文件仍存在于文件系统中(它具有inode)但其硬链接数为0.由于没有指向该文件的链接,因此无法按名称打开该文件,同时也无法仅靠inode打开文件.
+
+Linux通过`/proc`下的特殊符号链接显示打开的文件.这些链接称为`/proc/12345/fd/42`,其中12345是进程的**PID**,42是该进程中的文件描述符的编号.与该进程同一用户运行的程序可以访问该文件(读取/写入/执行权限与删除文件时的权限相同).
+
+在符号链接的目标中仍然可以看到打开文件的名称:如果文件是`/var/log/apache/foo.log`,那么链接的目标是`/var/log/apache/foo.log(deleted)`.
+
+因此可以恢复打开的已删除文件的内容,前提是知道已打开的进程的**PID**以及打开它的描述符,如下所示:
+
+```bash
+recover_open_deleted_file () {
+  old_name=$(readlink "$1")
+  case "$old_name" in
+    *' (deleted)')
+      old_name=${old_name%' (deleted)'}
+      if [ -e "$old_name" ]; then
+        new_name=$(TMPDIR=${old_name%/*} mktemp)
+        echo "$oldname has been replaced, recovering content to $new_name"
+      else
+        new_name="$old_name"
+      fi
+      cat <"$1" >"$new_name";;
+    *) echo "File is not deleted, doing nothing";;
+  esac
+}
+recover_open_deleted_file "/proc/$pid/fd/$fd"
+```
+
+如果只知道进程的**ID**但不知道文件描述符,则可以恢复所有文件:
+
+```bash
+for x in /proc/$pid/fd/* ; do
+  recover_open_deleted_file "$x"
+done
+```
+
+如果连进程的**ID**也不知道,则可以搜索所有进程:
+
+```bash
+for x in /proc/[1-9]*/fd/* ; do
+  case $(readlink "$x") in
+    /var/log/apache/*) recover_open_deleted_file "$x";;
+  esac
+done
+```
+
+还可以通过解析`lsof`的输出来获取此列表,但它并不简单也不可靠更不可移植(无论如何这都是Linux特定的).
+
+</details>
+
+<details>
+<summary><b>你必须远程在其中一台主要的服务器上重新安装系统,但是无法访问管理控制台(例如iDRAC).如何在已有Linux系统存在并运行的磁盘上安装Linux?</b></summary><br>
+
+可能的问题应该是:"_从系统级别安装系统并代替其他系统工作_".
+
+以Debian GNU/Linux发行版为例:
+
+1. 创建工作目录并使用debootstrap工具下载系统.
+
+```bash
+_working_directory="/mnt/system"
+mkdir $_working_directory
+debootstrap --verbose --arch amd64 {wheezy|jessie} . http://ftp.en.debian.org/debian
+```
+
+2. 挂载子系统:`proc`, `sys`, `dev`和`dev/pts`.
+
+```bash
+for i in proc sys dev dev/pts ; do mount -o bind $i $_working_directory/$i ; done
+```
+
+3. 备份系统以便还原.
+
+```bash
+cp system_backup_22012015.tgz $_working_directory/mnt
+```
+
+但是,最好不要浪费空间并以不同的方式进行(假设备份位于`/mnt/backup`中):
+
+```bash
+_backup_directory="${_working_directory}/mnt/backup"
+mkdir $_backup_directory && mount --bind /mnt/backup $_backup_directory
+```
+
+4. Chroot到"新"系统.
+
+```bash
+chroot $_working_directory /bin/bash
+```
+
+5. 更新挂载设备的信息.
+
+```bash
+grep -v rootfs /proc/mounts > /etc/mtab
+```
+
+6. 在"新"的系统中,接下来要做的就是挂载"旧"系统所在位置的磁盘(如`/dev/sda1`).
+
+```bash
+_working_directory="/mnt/old_system"
+_backup_directory="/mnt/backup"
+mkdir $_working_directory && mount /dev/sda1 $_working_directory
+```
+
+7. 删除所有旧系统的文件.
+
+```bash
+for i in $(ls | awk '!(/proc/ || /dev/ || /sys/ || /mnt/)') ; do rm -fr $i ; done
+```
+
+8. 下一步从备份中恢复系统.
+
+```bash
+tar xzvfp $_backup_directory/system_backup_22012015.tgz -C $_working_directory
+```
+
+9. 将下列目录`proc`,`sys`,`dev`和`dev/pts`挂载到新的工作目录.
+
+```bash
+for i in proc sys dev dev/pts ; do mount -o bind $i $_working_directory/$i ; done
+```
+
+10. 安装和更新grup配置.
+
+```bash
+chroot $_working_directory /bin/bash -c "grub-install --no-floppy --root-directory=/ /dev/sda"
+chroot $_working_directory /bin/bash -c "update-grub"
+```
+
+11. 卸载`proc`, `sys`, `dev`和`dev/pts`的文件系统.
+
+```bash
+cd
+grep $_working_directory /proc/mounts | cut -f2 -d " " | sort -r | xargs umount -n
+```
+
+所有命令,如`halt`,`shutdown`或`reboot`,需要重新加载系统配置,不然都不可用. - 为此,请使用**内核调试器**(除了'**b**'选项):
+
+```bash
+echo 1 > /proc/sys/kernel/sysrq
+echo reisu > /proc/sysrq-trigger
+```
+
+当然,建议完全重启机器以完全加载当前系统.如下操作:
+
+```bash
+sync ; reboot -f
+```
+
+</details>
+
+<details>
+<summary><b>在Rsync一个50G的单文件时触发了Linux OOM killer.OOM killer如何决定先杀死哪个进程?如何控制这一切?</b></summary><br>
+
+主流发行版的内核将`/proc/sys/vm/overcommit_memory`的默认值设置为零,这意味着进程可以请求比系统中当前可用的内存更多的内存.
+
+如果内存被进程彻底耗尽,并到了可能威胁系统稳定性的程度上,那么**OOM killer**就会出现.
+
+注意:**OOM Killer**的任务是持续杀死进程,直到释放足够的内存以使内核尝试运行的其余进程顺利运行.
+
+**OOM Killer**会选择最佳进程来杀死.最佳进程是指在杀死时释放最大内存的过程,且对系统来说也是最不重要的.
+
+主要目标是杀死最少数量的进程,最大限度地减少所造成的损害,同时释放最大化的内存量.
+
+为了实现这一点,内核为每个进程都维护了一个`oom_score`参数,可以在`/proc`文件系统中对应pid目录下看到每个进程的oom_score.
+
+>在分析OOM杀手日志时,重要的是查看触发它的内容.
+
+```bash
+cat /proc/10292/oom_score
+```
+
+进程的`oom_score`值越高,在内存不足的情况下被**OOM Killer**杀死的可能性就越高.
+
+如果想创建一个特殊的控制组,用来提示**OOM Killer**优先杀死的进程列表,那么请在`/mnt/oom-killer`下创建一个目录来表示:
+
+```bash
+mkdir lambs
+```
+
+将`oom.priority`设置为一个足够高的值:
+
+```bash
+echo 256 > /mnt/oom-killer/lambs/oom.priority
+```
+
+`oom.priority`是一个64位的无符号整数,且可以取值为最大的64位的无符号整数.在扫描需要杀死的进程时,**OOM-killer**会从进程列表中选择`oom.priority`值最大的进程.
+
+将进程PID添加到进程列表中:
+
+```bash
+echo <pid> > /mnt/oom-killer/lambs/tasks
+```
+
+要创建一个不会被**OOM-killer**杀死的进程列表,请创建一个包含进程的目录:
+
+```bash
+mkdir invincibles
+```
+
+将`oom.priority`设置为零会使此cgroup中的所有进程从要杀死的目标进程列表中排除.
+
+```bash
+echo 0 > /mnt/oom-killer/invincibles/oom.priority
+```
+
+要向该组添加更多进程,请将进程的pid添加到该组中的进程列表中:
+
+```bash
+echo <pid> > /mnt/oom-killer/invincibles/tasks
+```
+
+参考文档:
+
+- [Rsync triggered Linux OOM killer on a single 50 GB file](https://serverfault.com/questions/724469/rsync-triggered-linux-oom-killer-on-a-single-50-gb-file)
+
+</details>
+
+<details>
+<summary><b>什么是salted hashes?使用salt为<code>/etc/shadow</code>文件生成密码.</b></summary><br>
+
+**Salt**基本上就是随机数据.当受适当保护的密码系统收到新密码时,它将为该密码创建哈希值和新的随机salt值,然后将该组合值存储在其数据库中.这有助于抵御字典攻击和已知的哈希攻击.
+
+例如,如果用户在两个不同的系统上使用相同的密码和相同的哈希算法,则最终可能会得到相同的哈希值.但是,只要其中一个系统使用了salt,那么最后的哈希值就不会相同.
+
+`/etc/shadow`文件中的加密密码以下列格式存储:
+
+```bash
+$ID$SALT$ENCRYPTED
+```
+
+`$ID`表示加密类型,`$SALT`是随机(最多16个字符)字符串,`$ENCRYPTED`是哈希后的密码.
+
+<table style="width:100%">
+  <tr>
+    <th>Hash类型</th>
+    <th>ID</th>
+    <th>Hash长度</th>
+  </tr>
+  <tr>
+    <td>MD5</td>
+    <td>$1</td>
+    <td>22字符</td>
+  </tr>
+  <tr>
+    <td>SHA-256</td>
+    <td>$5</td>
+    <td>43字符</td>
+  </tr>
+  <tr>
+    <td>SHA-512</td>
+    <td>$6</td>
+    <td>86字符</td>
+  </tr>
+</table>
+
+使用Linux shell中的以下命令为`/etc/shadow`生成带随机salt的哈希密码:
+
+- 生成**MD5**哈希密码
+
+```bash
+python -c "import random,string,crypt; randomsalt = ''.join(random.sample(string.ascii_letters,8)); print crypt.crypt('MySecretPassword', '\$1\$%s\$' % randomsalt)"
+```
+
+- 生成**SHA-256**哈希密码
+
+```bash
+python -c "import random,string,crypt; randomsalt = ''.join(random.sample(string.ascii_letters,8)); print crypt.crypt('MySecretPassword', '\$5\$%s\$' % randomsalt)"
+```
+
+- 生成**SHA-512**哈希密码
+
+```bash
+python -c "import random,string,crypt; randomsalt = ''.join(random.sample(string.ascii_letters,8)); print crypt.crypt('MySecretPassword', '\$6\$%s\$' % randomsalt)"
+```
+
+</details>
+
+<details>
+<summary><b>有很多套接字挂在<code>TIME_WAIT</code>.且代理服务器后的http服务也有很多小http请求.如何检查并减少<code>TIME_WAIT</code>套接字? ***</b></summary><br>
+
+待续.
+
+参考文档:
+
+- [How to reduce number of sockets in TIME_WAIT?](https://serverfault.com/questions/212093/how-to-reduce-number-of-sockets-in-time-wait)
+
+</details>
